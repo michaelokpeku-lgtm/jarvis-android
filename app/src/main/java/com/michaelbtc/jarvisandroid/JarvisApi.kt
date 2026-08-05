@@ -13,8 +13,11 @@ object JarvisApi {
     private val client = OkHttpClient()
 
     fun send(message: String, callback: (String) -> Unit) {
-        val body = message.toRequestBody(
-    "text/plain".toMediaType()
+        val json = """{"message":"$message"}"""
+
+val body = json.toRequestBody(
+    "application/json".toMediaType()
+)
 )
 
         val request = Request.Builder()
