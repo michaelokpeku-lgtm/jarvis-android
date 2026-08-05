@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.speech.tts.TextToSpeech
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -13,9 +14,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private lateinit var resultText: TextView
+    private lateinit var tts: TextToSpeech
 
     companion object {
         private const val REQUEST_RECORD_AUDIO = 100
@@ -25,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        tts = TextToSpeech(this, this)
 
         val talkButton = findViewById<Button>(R.id.talkButton)
         resultText = findViewById(R.id.resultText)
@@ -101,9 +105,22 @@ class MainActivity : AppCompatActivity() {
             JarvisApi.send(message) { reply ->
                 runOnUiThread {
                     resultText.text = "You: $message\n\nJarvis: $reply"
+                    tts.speak(reply, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             }
         }
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts.language = Locale.US
+        }
+    }
+
+    override fun onDestroy() {
+        tts.stop()
+        tts.shutdown()
+        super.onDestroy()
     }
 }
 
