@@ -94,7 +94,16 @@ class MainActivity : AppCompatActivity() {
                 RecognizerIntent.EXTRA_RESULTS
             )
 
-            resultText.text = "You said:\n${results?.get(0)}"
+            val message = results?.get(0) ?: return
+
+            resultText.text = "You: $message"
+
+            JarvisApi.send(message) { reply ->
+                runOnUiThread {
+                    resultText.text = "You: $message\n\nJarvis: $reply"
+                }
+            }
         }
     }
 }
+
