@@ -15,10 +15,9 @@ object JarvisApi {
     fun send(message: String, callback: (String) -> Unit) {
         val json = """{"message":"$message"}"""
 
-val body = json.toRequestBody(
-    "application/json".toMediaType()
-)
-
+        val body = json.toRequestBody(
+            "application/json".toMediaType()
+        )
 
         val request = Request.Builder()
             .url(URL)
@@ -31,8 +30,18 @@ val body = json.toRequestBody(
             }
 
             override fun onResponse(call: Call, response: Response) {
-                callback(response.body?.string() ?: "No response")
+                val json = response.body?.string() ?: ""
+
+                try {
+                    val reply = org.json.JSONObject(json)
+                        .getString("reply")
+
+                    callback(reply)
+                } catch (e: Exception) {
+                    callback(json)
+                }
             }
         })
     }
 }
+
