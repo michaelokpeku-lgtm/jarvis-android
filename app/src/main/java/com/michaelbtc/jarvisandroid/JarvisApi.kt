@@ -8,7 +8,7 @@ import java.io.IOException
 object JarvisApi {
 
     // Replace with your server later
-    private const val URL = "http://10.0.2.2:5000/chat"
+    private const val URL = "http://127.0.0.1:5000/chat"
 
     private val client = OkHttpClient()
 
