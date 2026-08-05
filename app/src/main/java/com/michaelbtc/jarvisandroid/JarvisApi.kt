@@ -1,6 +1,8 @@
 package com.michaelbtc.jarvisandroid
 
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
 object JarvisApi {
@@ -11,10 +13,9 @@ object JarvisApi {
     private val client = OkHttpClient()
 
     fun send(message: String, callback: (String) -> Unit) {
-        val body = RequestBody.create(
-            "text/plain".toMediaType(),
-            message
-        )
+        val body = message.toRequestBody(
+    "text/plain".toMediaType()
+)
 
         val request = Request.Builder()
             .url(URL)
