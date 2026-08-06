@@ -24,30 +24,36 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         private const val REQUEST_SPEECH = 101
     }
 
-    private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ChatAdapter
-    private val messages = mutableListOf<ChatMessage>()
-
+    private lateinit var chatList: RecyclerView
+    private lateinit var input: EditText
     private lateinit var statusText: TextView
-    private lateinit var inputText: EditText
     private lateinit var tts: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        recyclerView = findViewById(R.id.chatList)
-        statusText = findViewById(R.id.statusText)
-        inputText = findViewById(R.id.messageInput)
-
-        adapter = ChatAdapter(messages)
-
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
-
         tts = TextToSpeech(this, this)
 
-        addJarvisMessage("Welcome back, Michael.\nI'm ready whenever you are.")
+        statusText = findViewById(R.id.statusText)
+        input = findViewById(R.id.messageInput)
+        chatList = findViewById(R.id.chatList)
+
+        adapter = ChatAdapter(mutableListOf())
+        chatList.layoutManager = LinearLayoutManager(this)
+        chatList.adapter = adapter
+
+        findViewById<Button>(R.id.sendButton).setOnClickListener {
+
+            val text = input.text.toString().trim()
+
+            if (text.isEmpty()) return@setOnClickListener
+
+            sendMessage(text)
+
+            input.setText("")
+        }
 
         findViewById<Button>(R.id.talkButton).setOnClickListener {
 
@@ -68,18 +74,32 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 startListening()
 
             }
-
         }
+    }
 
-        findViewById<Button>(R.id.sendButton).setOnClickListener {
+    private fun sendMessage(message: String) {
 
-            val message = inputText.text.toString().trim()
+        adapter.add(ChatMessage(message, true))
+        chatList.scrollToPosition(adapter.itemCount - 1)
 
-            if (message.isNotEmpty()) {
+        statusText.text = "🤖 Jarvis is thinking..."
 
-                inputText.setText("")
+        JarvisApi.send(message) { reply ->
 
-                sendMessage(message)
+            runOnUiThread {
+
+                statusText.text = "● Ready"
+
+                adapter.add(ChatMessage(reply, false))
+
+                chatList.scrollToPosition(adapter.itemCount - 1)
+
+                tts.speak(
+                    reply,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    "jarvis"
+                )
 
             }
 
@@ -89,9 +109,11 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun startListening() {
 
-        statusText.text = "● Listening..."
+        statusText.text = "🎤 Listening..."
 
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        val intent = Intent(
+            RecognizerIntent.ACTION_RECOGNIZE_SPEECH
+        )
 
         intent.putExtra(
             RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -103,51 +125,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             Locale.getDefault()
         )
 
-        startActivityForResult(intent, REQUEST_SPEECH)
-
-    }
-
-    private fun sendMessage(message: String) {
-
-        addUserMessage(message)
-
-        statusText.text = "● Thinking..."
-
-        JarvisApi.send(message) { reply ->
-
-            runOnUiThread {
-
-                addJarvisMessage(reply)
-
-                statusText.text = "● Speaking..."
-
-                tts.speak(reply, TextToSpeech.QUEUE_FLUSH, null, "jarvis")
-
-                statusText.text = "● Ready"
-
-            }
-
-        }
-
-    }
-
-    private fun addUserMessage(text: String) {
-
-        messages.add(ChatMessage(text, true))
-
-        adapter.notifyItemInserted(messages.size - 1)
-
-        recyclerView.scrollToPosition(messages.size - 1)
-
-    }
-
-    private fun addJarvisMessage(text: String) {
-
-        messages.add(ChatMessage(text, false))
-
-        adapter.notifyItemInserted(messages.size - 1)
-
-        recyclerView.scrollToPosition(messages.size - 1)
+        startActivityForResult(
+            intent,
+            REQUEST_SPEECH
+        )
 
     }
 
@@ -163,7 +144,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             grantResults
         )
 
-        if (requestCode == REQUEST_RECORD_AUDIO &&
+        if (
+            requestCode == REQUEST_RECORD_AUDIO &&
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
@@ -181,19 +163,28 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         data: Intent?
     ) {
 
-        super.onActivityResult(requestCode, resultCode, data)
+        super.onActivityResult(
+            requestCode,
+            resultCode,
+            data
+        )
 
-        if (requestCode == REQUEST_SPEECH &&
+        if (
+            requestCode == REQUEST_SPEECH &&
             resultCode == Activity.RESULT_OK
         ) {
 
-            val results = data?.getStringArrayListExtra(
-                RecognizerIntent.EXTRA_RESULTS
-            )
+            val text = data
+                ?.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS
+                )
+                ?.firstOrNull()
 
-            val message = results?.firstOrNull() ?: return
+            if (text != null) {
 
-            sendMessage(message)
+                sendMessage(text)
+
+            }
 
         }
 
@@ -212,7 +203,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     override fun onDestroy() {
 
         tts.stop()
-
         tts.shutdown()
 
         super.onDestroy()

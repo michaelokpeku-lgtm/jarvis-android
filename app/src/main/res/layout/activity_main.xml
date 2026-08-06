@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,10 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="JARVIS"
-        android:textColor="#27B8FF"
         android:textSize="34sp"
         android:textStyle="bold"
-        android:gravity="center"/>
+        android:textColor="#27B8FF"
+        android:gravity="center" />
 
     <TextView
         android:id="@+id/statusText"
@@ -26,7 +27,7 @@
         android:textSize="16sp"
         android:gravity="center"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="16dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatList"
@@ -34,16 +35,18 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="12dp"
+        tools:listitem="@layout/chat_item_jarvis" />
 
     <EditText
         android:id="@+id/messageInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Type a message..."
+        android:hint="Ask Jarvis anything..."
         android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:backgroundTint="#27B8FF"/>
+        android:textColorHint="#777777"
+        android:backgroundTint="#27B8FF"
+        android:padding="12dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -54,9 +57,9 @@
         <Button
             android:id="@+id/talkButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_weight="1"
-            android:text="🎤 TALK"/>
+            android:text="🎤"/>
 
         <Space
             android:layout_width="12dp"
@@ -65,8 +68,8 @@
         <Button
             android:id="@+id/sendButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_height="56dp"
+            android:layout_weight="2"
             android:text="SEND"/>
 
     </LinearLayout>

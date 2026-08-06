@@ -1,6 +1,7 @@
 package com.michaelbtc.jarvisandroid
 
 data class ChatMessage(
-    val text: String,
-    val isUser: Boolean
+    val message: String,
+    val isUser: Boolean,
+    val time: Long = System.currentTimeMillis()
 )
