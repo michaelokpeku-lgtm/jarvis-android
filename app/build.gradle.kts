@@ -16,10 +16,14 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
-        }
+    debug {
+        isDebuggable = true
     }
+
+    release {
+        isMinifyEnabled = false
+    }
+}
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
