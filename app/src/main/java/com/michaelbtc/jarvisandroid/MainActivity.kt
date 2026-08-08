@@ -44,20 +44,38 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         chatList.layoutManager = LinearLayoutManager(this)
         chatList.adapter = adapter
 
+        // Request microphone permission when JARVIS first starts.
+        if (
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                REQUEST_RECORD_AUDIO
+            )
+        } else {
+            startWakeWordService()
+        }
+
         findViewById<Button>(R.id.sendButton).setOnClickListener {
 
             val text = input.text.toString().trim()
 
-            if (text.isEmpty()) return@setOnClickListener
+            if (text.isEmpty()) {
+                return@setOnClickListener
+            }
 
             sendMessage(text)
-
             input.setText("")
         }
 
         findViewById<Button>(R.id.talkButton).setOnClickListener {
 
-            if (ContextCompat.checkSelfPermission(
+            if (
+                ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.RECORD_AUDIO
                 ) != PackageManager.PERMISSION_GRANTED
@@ -72,9 +90,21 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             } else {
 
                 startListening()
-
             }
         }
+    }
+
+    private fun startWakeWordService() {
+
+        val serviceIntent = Intent(
+            this,
+            WakeWordService::class.java
+        )
+
+        ContextCompat.startForegroundService(
+            this,
+            serviceIntent
+        )
     }
 
     private fun sendMessage(message: String) {
@@ -100,11 +130,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     null,
                     "jarvis"
                 )
-
             }
-
         }
-
     }
 
     private fun startListening() {
@@ -129,7 +156,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             intent,
             REQUEST_SPEECH
         )
-
     }
 
     override fun onRequestPermissionsResult(
@@ -150,10 +176,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
 
-            startListening()
-
+            startWakeWordService()
         }
-
     }
 
     @Deprecated("Deprecated in Java")
@@ -181,23 +205,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 ?.firstOrNull()
 
             if (text != null) {
-
                 sendMessage(text)
-
             }
-
         }
-
     }
 
     override fun onInit(status: Int) {
 
         if (status == TextToSpeech.SUCCESS) {
-
             tts.language = Locale.US
-
         }
-
     }
 
     override fun onDestroy() {
@@ -206,7 +223,5 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         tts.shutdown()
 
         super.onDestroy()
-
     }
-
 }
